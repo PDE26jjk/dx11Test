@@ -179,6 +179,9 @@ void App::DoFrame()
 	static int tex_num = 0;
 	static float speed = 10.0f;
 	static Camera *pCamera = &wnd.Gfx().GetMainCamera();
+	static Mouse *pMouse = &wnd.mouse;
+	static Keyboard *pKbd = &wnd.kbd;
+	static Graphics *pGfx = &wnd.Gfx();
 	const float t = timer.Mark();
 
 	//static float mTheta = 1.5f * XM_PI;
@@ -209,63 +212,60 @@ void App::DoFrame()
 	const auto mouseEvent = wnd.mouse.Read();
 	using mouseType = Mouse::Event::Type;
 	if ((mouseType)mouseEvent.GetType() == mouseType::Move) {
-		//if (mouseEvent.LeftIsPressed()) {
-		//	float dmTheta = 0.025f * static_cast<float>(x - mouseEvent.GetPosX());
-		//	float dmPhi = 0.025f * static_cast<float>(y - mouseEvent.GetPosY());
-		//	mTheta += dmTheta;
-		//	mPhi += dmPhi;
-		//	mPhi = std::clamp(mPhi, 0.01f, XM_PI - 0.01f);
-		//}
-		//else if (mouseEvent.RightIsPressed()) {
-		//	// Make each pixel correspond to 0.005 unit in the scene.
-		//	float dx = 0.05f * static_cast<float>(x - mouseEvent.GetPosX());
-		//	float dy = 0.05f * static_cast<float>(y - mouseEvent.GetPosY());
-		//	// Update the camera radius based on input.
-		//	mRadius += dx - dy;
-		//	// Restrict the radius.
-		//	mRadius = std::clamp(mRadius, 0.01f, 10000.0f);
-
-		//}
+		float dx = 0.005f * static_cast<float>(x - pMouse->GetPosX());
+		float dy = 0.005f * static_cast<float>(y - pMouse->GetPosY());
+		x = pMouse->GetPosX();
+		y = pMouse->GetPosY();
+		if (pMouse->LeftIsPressed()) {
 		// 更新鼠标位置和偏移
-		float dx = 0.015f * static_cast<float>(x - mouseEvent.GetPosX());
-		float dy = 0.015f * static_cast<float>(y - mouseEvent.GetPosY());
-		x = mouseEvent.GetPosX();
-		y = mouseEvent.GetPosY();
+			//更新摄像机
+		pCamera->RotateCamera(cameraLx, -dy);
+		pCamera->RotateCamera(Coordinate::Y, -dx);
+			
 
-		//更新摄像机
-		pCamera->RollCamera(Coordinate::Y, -dx);
-		
-		pCamera->RollCamera(cameraLx, -dy);
-	wnd.Gfx().UpdateCamera();
+
+		pGfx->UpdateCamera();
+		}
+	
 	}
 	
-
 	// 处理键盘
 	XMVECTOR cameraOffset = XMVectorZero();
-	if (wnd.kbd.KeyIsPressed('W') && !wnd.kbd.KeyIsPressed('S')) {
-		cameraOffset += pCamera->GetDirection() * speed;
-		
+	if (pMouse->LeftIsPressed()) {
+		if (pKbd->KeyIsPressed('W') && !pKbd->KeyIsPressed('S')) {
+			cameraOffset += pCamera->GetDirection() * speed;
+
+		}
+		else if (pKbd->KeyIsPressed('S') && !pKbd->KeyIsPressed('W')) {
+			cameraOffset -= pCamera->GetDirection() * speed;
+
+		}
+		if (pKbd->KeyIsPressed('D') && !pKbd->KeyIsPressed('A')) {
+			cameraOffset += cameraLx * speed;
+
+		}
+		else if (pKbd->KeyIsPressed('A') && !pKbd->KeyIsPressed('D')) {
+			cameraOffset -= cameraLx * speed;
+
+		}
+		if (pKbd->KeyIsPressed('Q')) {
+			cameraOffset -= Coordinate::Y * speed;
+		}
+		if (pKbd->KeyIsPressed('E')) {
+			cameraOffset += Coordinate::Y * speed;
+		}
+
+		if (XMVector3NotEqual(cameraOffset, XMVectorZero())) {
+			pCamera->MoveCamera(cameraOffset);
+			pGfx->UpdateCamera();
+		}
 	}
-	else if (wnd.kbd.KeyIsPressed('S') && !wnd.kbd.KeyIsPressed('W')) {
-		cameraOffset -= pCamera->GetDirection() * speed;
-		
-	}
-	if (wnd.kbd.KeyIsPressed('D') && !wnd.kbd.KeyIsPressed('A')) {
-		cameraOffset += cameraLx * speed;
-		
-	}
-	else if (wnd.kbd.KeyIsPressed('A') && !wnd.kbd.KeyIsPressed('D')) {
-		cameraOffset -= cameraLx * speed;
-		
-	}
-	if (!XMVectorEqual(cameraOffset, XMVectorZero()).m128_f32[0]) {
-		pCamera->MoveCamera(cameraOffset);
-		wnd.Gfx().UpdateCamera();
-	}
+	
+	
 
 	//wnd.Gfx().DrawBox();
 	//wnd.Gfx().DrawCylinder();
-	wnd.Gfx().DrawFrame();
+	pGfx->DrawFrame();
 	//wnd.Gfx().DrawHills();
 	//wnd.Gfx().ClearBuf03fer(c, c, 1.0f);
 	//++tex_num;
@@ -283,5 +283,5 @@ void App::DoFrame()
 
 	//}
 	/*火焰完*/
-	wnd.Gfx().EndFrame();
+	pGfx->EndFrame();
 }

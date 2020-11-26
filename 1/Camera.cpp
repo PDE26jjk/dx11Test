@@ -54,7 +54,7 @@ void Camera::MoveCamera(const XMVECTOR& offset)
 	UpdateViewMatrix();
 }
 
-void Camera::RollCamera(const XMVECTOR& A, float angle)
+void Camera::RotateCamera(const XMVECTOR& A, float angle)
 {
 	XMVECTOR dir = XMLoadFloat4(&this->dir);
 	dir = XMVector3Transform(dir, XMMatrixRotationAxis(A, angle));

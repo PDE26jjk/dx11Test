@@ -8,7 +8,7 @@ public:
 	Camera(const XMVECTOR& pos, const XMVECTOR& dir, float AspectRatio);
 	void SetCamera(const XMVECTOR& pos,const XMVECTOR& dir);
 	void MoveCamera(const XMVECTOR& offset);
-	void RollCamera(const XMVECTOR& A, float angle);
+	void RotateCamera(const XMVECTOR& A, float angle);
 	void SetAspectRatio(const float& AspectRatio);
 public:
 	// 投影、视矩阵、投影视矩阵	

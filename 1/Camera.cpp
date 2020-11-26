@@ -76,7 +76,7 @@ void Camera::SetCamera(const XMVECTOR& pos, const XMVECTOR& target)
 	
 	XMMATRIX ViewProjM = VM * PM;
 	XMStoreFloat4x4(&ViewProj, ViewProjM);
-
+	 
 	XMVECTOR lpos = pos - target;
 	
 	float mRadius = XMVectorGetX(XMVector4LengthEst(lpos));

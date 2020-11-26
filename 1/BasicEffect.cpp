@@ -101,12 +101,12 @@ void BasicEffect::Draw()
 	//	mfxFogColor->SetRawValue(&mFogColor, 0, sizeof(mFogColor));
 	//	mFogIsChange = false;
 	//}
-	mfxEyePosW->SetRawValue(&mGfx->GetMainCamera().mEyePosW, 0, sizeof(mGfx->GetMainCamera().mEyePosW));
+	mfxEyePosW->SetRawValue(&mGfx->GetMainCamera().GetPosition(), 0, sizeof(XMFLOAT3));
 	
 	for (UINT i = 0; i < mirrors.size(); ++i)
 	{
-		XMVECTOR refPos = XMVector3Reflect(mGfx->GetMainCamera().pos, XMLoadFloat3(&mirrors[i]->Direction));
-		XMVECTOR refDir = XMVector3Reflect(mGfx->GetMainCamera().target - mGfx->GetMainCamera().pos, XMLoadFloat3(&mirrors[i]->Direction));
+		XMVECTOR refPos = XMVector3Reflect(mGfx->GetMainCamera().GetPosition(), XMLoadFloat3(&mirrors[i]->Direction));
+		XMVECTOR refDir = XMVector3Reflect(mGfx->GetMainCamera().GetDirection(), XMLoadFloat3(&mirrors[i]->Direction));
 		mirrors[i]->SetCamera(refPos, refPos + refDir);
 
 		// 将物体绘制到镜子上
@@ -518,7 +518,7 @@ inline void BasicEffect::DrawMirrors(ID3D11RenderTargetView* target, Camera& cam
 std::vector<UINT>& BasicEffect::SortShapes(Camera& camera) const
 {
 	static bool isGroup = false;
-	static XMVECTOR targeToPos = camera.target - camera.pos;
+	static XMVECTOR targeToPos = camera.GetDirection();
 	static std::vector<UINT> order(pShapes.size());
 	if (!pShapes.size())
 		return order;

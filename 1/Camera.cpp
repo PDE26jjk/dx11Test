@@ -3,60 +3,32 @@ using namespace DirectX;
 
 Camera::Camera()
 {
-	float mTheta = 1.5f * XM_PI;
-	float mPhi = 0.25f * XM_PI;
-	float mRadius = 5.0f;
-	float AspectRatio = 1.3333333f;
+	XMVECTOR pos = XMVectorZero();
+	XMVECTOR dir = XMVectorSet(0.0f,0.0f,1.0f,0.0f);
+	float AspectRatio = 1.33333333f;
 
-	new(this) Camera(mTheta, mPhi, mRadius, AspectRatio);
+	new(this) Camera(pos, dir, AspectRatio);
 }
 
-Camera::Camera(float mTheta, float mPhi, float mRadius, float AspectRatio)
+
+Camera::Camera(const XMVECTOR& pos, const XMVECTOR& dir, float AspectRatio)
 	:
-	mTheta(mTheta),
-	mPhi(mPhi),
-	mRadius(mRadius)
+	FovAngleY(0.25f * XM_PI),
+	NearZ(0.01f), 
+	FarZ(10000.0f),
+	AspectRatio(AspectRatio)
 {
-	target = XMVectorZero();
-	up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMStoreFloat4(&up,Coordinate::Y);
+	XMStoreFloat4(&this->pos, pos);
+	XMStoreFloat4(&this->dir, dir);
 	SetAspectRatio(AspectRatio);
-	SetCamera(mTheta, mPhi, mRadius);
+	SetCamera(pos, dir);
 }
 
-void Camera::SetCamera(float mTheta, float mPhi, float mRadius)
-{
-	this->mTheta = mTheta;
-	this->mPhi = mPhi;
-	this->mRadius = mRadius;
 
-	XMMATRIX PM = XMLoadFloat4x4(&P);
-	
-	// 计算局部位置
-	float x = mRadius * sinf(mPhi) * cosf(mTheta);
-	float z = mRadius * sinf(mPhi) * sinf(mTheta);
-	float y = mRadius * cosf(mPhi);
-	XMVECTOR lpos = XMVectorSet(x, y, z, 1.0f);
-
-	// 计算全局位置
-	pos = lpos + target;
-
-	XMFLOAT4 position;
-	XMStoreFloat4(&position, pos);
-
-	mEyePosW = XMFLOAT3(position.x, position.y, position.z);
-
-	XMMATRIX VM = XMMatrixLookAtLH(pos, target, up);
-	XMStoreFloat4x4(&V, VM);
-
-	XMMATRIX ViewProjM = VM * PM;
-	XMStoreFloat4x4(&ViewProj, ViewProjM);
-
-}
-
-void Camera::SetCamera(const XMVECTOR& pos, const XMVECTOR& target)
+void Camera::SetCamera(const XMVECTOR& pos, const XMVECTOR& dir)
 {
 
-	XMMATRIX PM = XMLoadFloat4x4(&P);
 
 	XMFLOAT4 position;
 	XMStoreFloat4(&position, pos);
@@ -66,34 +38,51 @@ void Camera::SetCamera(const XMVECTOR& pos, const XMVECTOR& target)
 	float z = position.z;
 	float y = position.y;
 
-	mEyePosW = XMFLOAT3(x, y, z);
+	this->pos = XMFLOAT4(x, y, z,1.0f);
+	XMStoreFloat4(&this->dir, dir);
 
-	this->pos = XMVectorSet(x, y, z, 1.0f);
-	this->target = target;
+	UpdateViewMatrix();
+	
+}
 
-	XMMATRIX VM = XMMatrixLookAtLH(pos, target, up);
-	XMStoreFloat4x4(&V, VM);
-	
-	XMMATRIX ViewProjM = VM * PM;
-	XMStoreFloat4x4(&ViewProj, ViewProjM);
-	 
-	XMVECTOR lpos = pos - target;
-	
-	float mRadius = XMVectorGetX(XMVector4LengthEst(lpos));
-	float mPhi = XMVectorGetX(XMVector4AngleBetweenVectors(lpos,up));
-	float mTheta = XMVectorGetX(XMVector4AngleBetweenVectors(
-		XMVectorSetY(lpos, 0.0f),
-		XMVectorSet(1.0f,0.0f,0.0f,0.0f)));
-	this->mTheta = mTheta;
-	this->mPhi = mPhi;
-	this->mRadius = mRadius;
+void Camera::MoveCamera(const XMVECTOR& offset)
+{
+	XMVECTOR pos = XMLoadFloat4(&this->pos);
+	pos += offset;
+	pos.m128_f32[3] = 1.0f;
+	XMStoreFloat4(&this->pos, pos);
+	UpdateViewMatrix();
+}
+
+void Camera::RollCamera(const XMVECTOR& A, float angle)
+{
+	XMVECTOR dir = XMLoadFloat4(&this->dir);
+	dir = XMVector3Transform(dir, XMMatrixRotationAxis(A, angle));
+	float dirY = XMVectorGetY(dir);
+	if (dirY > 0.99f || dirY < -0.99f) return;
+	XMStoreFloat4(&this->dir, dir);
+	UpdateViewMatrix();
 }
 
 void Camera::SetAspectRatio(const float& AspectRatio)
 {
 	this->AspectRatio = AspectRatio;
 	// 计算投影矩阵
-	XMMATRIX PM = XMMatrixPerspectiveFovLH(0.25f * XM_PI,
-		AspectRatio, 0.01f, 100000.0f);
+	XMMATRIX PM = XMMatrixPerspectiveFovLH(FovAngleY,
+		AspectRatio, NearZ, FarZ);
 	XMStoreFloat4x4(&P, PM);
+}
+
+void Camera::UpdateViewMatrix()
+{
+	XMVECTOR pos = XMLoadFloat4(&this->pos);
+	XMVECTOR dir = XMLoadFloat4(&this->dir);
+	XMVECTOR up = XMLoadFloat4(&this->up);
+
+	XMMATRIX VM = XMMatrixLookToLH(pos, dir, up);
+	XMStoreFloat4x4(&V, VM);
+
+	XMMATRIX PM = XMLoadFloat4x4(&P);
+	XMMATRIX ViewProjM = VM * PM;
+	XMStoreFloat4x4(&ViewProj, ViewProjM);
 }

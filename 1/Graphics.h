@@ -31,7 +31,7 @@ public:
 	void SetAspectRatio(float AspectRatio) { this->AspectRatio = AspectRatio; mMainCamera.SetAspectRatio(AspectRatio); }
 	void SetBackgroundColor(XMFLOAT4 color) { this->mBGColor = color; }
 	void SetCamera(Camera camera);
-	void UpdateCamera(float mTheta, float mPhi, float mRadius);
+	void UpdateCamera();
 	void EndFrame();
 	//void DrawBox();
 	//void DrawShapes(ID3D11RenderTargetView* target, Camera& camera);

@@ -25,7 +25,7 @@ void HillTess::Draw()
 	XMMATRIX worldViewProj = world * ViewProjM;
 	mfxWorldViewProj->SetMatrix(reinterpret_cast<float*>(&worldViewProj));
 	mfxWorld->SetMatrix(reinterpret_cast<float*>(&world));
-	mfxEyePosW->SetRawValue(&mGfx->GetMainCamera().mEyePosW, 0, sizeof(mGfx->GetMainCamera().mEyePosW));
+	HR(mfxEyePosW->SetRawValue(&mGfx->GetMainCamera().GetPosition(), 0, sizeof(XMFLOAT3)));
 
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{

@@ -14,6 +14,7 @@
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"Effects11d.lib")
 #pragma comment(lib,"D3DCompiler.lib")
+#define DEBUG
 
 HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRESULT hr,
     _In_opt_ const WCHAR* strMsg, _In_ bool bPopMsgBox);
@@ -69,4 +70,11 @@ namespace Colors2
 
     XMGLOBALCONST XMVECTORF32 Silver = { 0.75f, 0.75f, 0.75f, 1.0f };
     XMGLOBALCONST XMVECTORF32 LightSteelBlue = { 0.69f, 0.77f, 0.87f, 1.0f };
+}
+namespace Coordinate
+{
+    using namespace DirectX;
+    XMGLOBALCONST XMVECTORF32 X = { 1.0f, 0.0f, 0.0f, 0.0f };
+    XMGLOBALCONST XMVECTORF32 Y = { 0.0f, 1.0f, 0.0f, 0.0f };
+    XMGLOBALCONST XMVECTORF32 Z = { 0.0f, 0.0f, 1.0f, 0.0f };
 }

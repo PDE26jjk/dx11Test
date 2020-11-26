@@ -216,9 +216,8 @@ void Graphics::SetCamera(Camera camera) {
 }
 
 
-void Graphics::UpdateCamera(float mTheta, float mPhi, float mRadius)
+void Graphics::UpdateCamera()
 {
-	mMainCamera.SetCamera(mTheta, mPhi, mRadius);
 	cameraIsChange = true;
 }
 
